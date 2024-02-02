@@ -171,17 +171,32 @@ Proof.
 Theorem mult_0_r : forall n:nat,
   n * 0 = 0.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros n. induction n as [| n' IHn'].
+  - simpl. reflexivity.
+  - simpl. rewrite -> IHn'. reflexivity.
+Qed.
+
 
 Theorem plus_n_Sm : forall n m : nat,
   S (n + m) = n + (S m).
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros n m.
+  induction n as [| n' IHn'].
+    - simpl. reflexivity.
+    - simpl. rewrite -> IHn'. reflexivity.
+Qed.
+
 
 Theorem plus_comm : forall n m : nat,
   n + m = m + n.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros n m.
+  induction n as [| n' IHn'].
+    - simpl. rewrite <- plus_n_O. reflexivity.
+    - simpl. rewrite plus_n_Sm. destruct m as [| m'].
+      + rewrite <- plus_n_Sm. simpl. rewrite plus_n_O. reflexivity.
+      + simpl. rewrite <- plus_n_Sm. rewrite IHn'. rewrite plus_n_Sm. reflexivity.
+Qed.
 
 Theorem plus_assoc : forall n m p : nat,
   n + (m + p) = (n + m) + p.

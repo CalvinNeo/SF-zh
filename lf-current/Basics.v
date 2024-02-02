@@ -1088,14 +1088,27 @@ Qed.
 Theorem andb_true_elim2 : forall b c : bool,
   andb b c = true -> c = true.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros b c.
+  intros H.
+  destruct b as [true|false].
+  + destruct c as [true|false].
+    - reflexivity.
+    - rewrite <- H. reflexivity.
+  + destruct c as [true|false].
+    - rewrite <- H. reflexivity.
+    - rewrite <- H. reflexivity.
+Qed.
 (** [] *)
 
 (** **** 练习：1 星, standard (zero_nbeq_plus_1)  *)
 Theorem zero_nbeq_plus_1 : forall n : nat,
   0 =? (n + 1) = false.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros n.
+  destruct n as [O|n'].
+  - reflexivity.
+  - reflexivity.
+Qed.
 (** [] *)
 
 (* ################################################################# *)
@@ -1208,7 +1221,30 @@ Theorem andb_eq_orb :
   (andb b c = orb b c) ->
   b = c.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros b c.
+  destruct b as [true|false].
+  + destruct c as [true|false].
+    - reflexivity.
+    - intros H. inversion H.
+  + destruct c as [true|false].
+    - intros H. inversion H.
+    - reflexivity.
+Qed.
+
+Theorem andb_eq_orb2 :
+  forall (b c : bool),
+  (andb b c = orb b c) ->
+  b = c.
+Proof.
+  intros b c.
+  destruct b as [true|false].
+  + destruct c as [true|false].
+    - reflexivity.
+    - simpl. intros H. rewrite -> H. reflexivity.
+  + destruct c as [true|false].
+    - simpl. intros H. rewrite -> H. reflexivity.
+    - reflexivity.
+
 
 (** [] *)
 

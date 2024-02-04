@@ -64,7 +64,10 @@ Theorem silly_ex :
      evenb 4 = true ->
      oddb 3 = true.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros H eq.
+  apply H. apply eq.
+Qed.
+
 (** [] *)
 
 (** 要使用 [apply] 策略，被应用的事实（的结论）必须精确地匹配证明目标：
@@ -88,11 +91,20 @@ Proof.
     （_'提示'_：你可以配合之前定义的引理来使用 [apply]，不仅限于当前上下文中的前提。
     记住 [Search] 是你的朋友。） *)
 
+Search rev.
+
+
 Theorem rev_exercise1 : forall (l l' : list nat),
      l = rev l' ->
      l' = rev l.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros l l' H.
+  rewrite -> H. (* l' = rev (rev l') *)
+  symmetry.
+  apply rev_involutive.
+Qed.
+
+
 (** [] *)
 
 (** **** 练习：1 星, standard, optional (apply_rewrite) 
@@ -154,7 +166,13 @@ Example trans_eq_exercise : forall (n m o p : nat),
      (n + p) = m ->
      (n + p) = (minustwo o).
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros n m o p.
+  intros H1 H2.
+  apply trans_eq with (m:=m).
+  apply H2. apply H1.
+Qed.
+
+
 (** [] *)
 
 (* ################################################################# *)
@@ -244,7 +262,20 @@ Example injection_ex3 : forall (X : Type) (x y z : X) (l j : list X),
   j = z :: l ->
   x = y.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros t x y z l j.
+  intros H1 H2.
+  injection H1 as Hnm1.
+  assert(H3: y :: l = z :: l).
+  rewrite H. rewrite H2.
+  reflexivity.
+  assert(H4: y = z).
+  injection H3 as Hnm2.
+  apply Hnm2.
+  rewrite Hnm1.
+  rewrite H4.
+  reflexivity.
+Qed.
+
 (** [] *)
 
 (** So much for injectivity of constructors.  What about disjointness?
@@ -312,10 +343,26 @@ Example discriminate_ex3 :
     x :: y :: l = [] ->
     x = z.
 Proof.
-  (* 请在此处解答 *) Admitted.
+    intros t x y z l j.
+    intros H.
+    discriminate H.
+Qed.
+
 (** [] *)
 
-
+Theorem andb_true_elim3 : forall b c : bool,
+  andb b c = true -> c = true.
+Proof.
+  intros b c.
+  intros H.
+  destruct b as [true|false].
+  + destruct c as [true|false].
+    - reflexivity.
+    - discriminate H.
+  + destruct c as [true|false].
+    - discriminate H.
+    - discriminate H.
+Qed.
 
 (** 构造子的单射性能让我们论证 [forall (n m : nat), S n = S m -> n = m]。
     此蕴含式的逆形式是一个构造子和函数的更一般的实例，
@@ -414,6 +461,17 @@ Proof.
   - (* n = S n' *) intros eq. destruct m as [| m'] eqn:E.
     + (* m = O *) discriminate eq.
     + (* m = S m' *) apply f_equal.
+
+(**
+1 goal
+n', m, m' : nat
+E : m = S m'
+IHn' : double n' = double (S m') -> n' = S m'
+eq : double (S n') = double (S m')
+______________________________________(1/1)
+n' = m'
+
+**)
 
 (** 此时，归纳假设 [IHn'] _'不会'_给出 [n' = m'] -- 会有个额外的 [S] 阻碍 --
     因此该目标无法证明。 *)
@@ -522,7 +580,15 @@ Proof.
 Theorem eqb_true : forall n m,
     n =? m = true -> n = m.
 Proof.
-  (* 请在此处解答 *) Admitted.
+intro n. induction n as [| n' IHn'].
+  - intro m. induction m as [| m' IHm'].
+    + reflexivity.
+    + discriminate.
+  - intros m eq. induction m as [| m' IHm'].
+    + simpl. discriminate.
+    + apply f_equal. apply IHn'. apply eq.
+Qed.
+  
 (** [] *)
 
 (** **** 练习：2 星, advanced (eqb_true_informal) 
@@ -539,12 +605,49 @@ Definition manual_grade_for_informal_proof : option (nat*string) := None.
 
     In addition to being careful about how you use [intros], practice
     using "in" variants in this proof.  (Hint: use [plus_n_Sm].) *)
+Theorem plus_n_n_injective_try1 : forall n m,
+     n + n = m + m ->
+     n = m.
+Proof.
+  intros n. induction n as [| n' IHn'].
+  - intros [] eq. reflexivity. discriminate.
+  - intros m. destruct m as [|m'].
+    + discriminate.
+    + assert (H4: forall z: nat, (S z) + (S z) = S (S (z + z))).
+      intro z. rewrite plus_n_Sm. reflexivity.
+      intro eq. Fail apply eq. Abort.
+
+Theorem plus_n_n_injective_try2 : forall n m,
+     n + n = m + m ->
+     n = m.
+Proof.
+  intros n. induction n as [| n' IHn'].
+  - intros [] eq. reflexivity. discriminate.
+  - intros m. destruct m as [|m'].
+    + discriminate.
+    + simpl.
+      rewrite <- plus_n_Sm.
+      rewrite <- plus_n_Sm.
+      intro H4. Abort.
+
 Theorem plus_n_n_injective : forall n m,
      n + n = m + m ->
      n = m.
 Proof.
-  intros n. induction n as [| n'].
-  (* 请在此处解答 *) Admitted.
+  intros n. induction n as [| n' IHn'].
+  - intros [] eq. reflexivity. discriminate.
+  - intros m H. destruct m as [|m'].
+    + discriminate.
+    + apply f_equal.
+      apply IHn'. (* n' = m' changed to n' + n' = m' + m *)
+      simpl in H.
+      rewrite <- plus_n_Sm in H.
+      rewrite <- plus_n_Sm in H.
+      inversion H.
+      reflexivity.
+Qed.
+
+(**
 (** [] *)
 
 (** 在 [induction] 之前做一些 [intros] 来获得更一般归纳假设并不总是奏效。

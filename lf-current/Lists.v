@@ -126,14 +126,15 @@ Proof.
 Theorem snd_fst_is_swap : forall (p : natprod),
   (snd p, fst p) = swap_pair p.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros p. destruct p as [n m]. reflexivity. Qed.
 (** [] *)
 
 (** **** 练习：1 星, standard, optional (fst_swap_is_snd)  *)
 Theorem fst_swap_is_snd : forall (p : natprod),
   fst (swap_pair p) = snd p.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros p. destruct p as [n m]. reflexivity. Qed.
+
 (** [] *)
 
 (* ################################################################# *)
@@ -266,19 +267,30 @@ Proof. reflexivity.  Qed.
     完成以下 [nonzeros]、[oddmembers] 和 [countoddmembers] 的定义，
     你可以查看测试函数来理解这些函数应该做什么。 *)
 
-Fixpoint nonzeros (l:natlist) : natlist
-  (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
+Fixpoint nonzeros (l:natlist) : natlist :=
+  match l with
+  | nil => nil
+  | h :: t =>
+    match h with
+      | O => nonzeros t
+      | (S p) => (S p) :: nonzeros t
+    end
+  end.
+
 
 Example test_nonzeros:
   nonzeros [0;1;0;2;3;0;0] = [1;2;3].
-  (* 请在此处解答 *) Admitted.
+Proof. simpl. reflexivity. Qed.
 
-Fixpoint oddmembers (l:natlist) : natlist
-  (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
+Fixpoint oddmembers (l:natlist) : natlist :=
+  match l with
+  | nil => nil
+  | h :: t => if evenb h then oddmembers t else h :: oddmembers t
+  end.
 
 Example test_oddmembers:
   oddmembers [0;1;0;2;3;0;0] = [1;3].
-  (* 请在此处解答 *) Admitted.
+Proof. simpl. reflexivity. Qed.
 
 Definition countoddmembers (l:natlist) : nat
   (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
@@ -713,17 +725,29 @@ Qed.
 Theorem app_nil_r : forall l : natlist,
   l ++ [] = l.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intro l.
+  induction l as [| h l' IHl'].
+  - reflexivity.
+  - simpl. rewrite -> IHl'. reflexivity.
+Qed.
+
 
 Theorem rev_app_distr: forall l1 l2 : natlist,
   rev (l1 ++ l2) = rev l2 ++ rev l1.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros l1 l2. induction l1 as [| n l1' IHl1'].
+  - simpl. rewrite app_nil_r. reflexivity.
+  - simpl. rewrite IHl1'. rewrite app_assoc. reflexivity.
+Qed.
 
 Theorem rev_involutive : forall l : natlist,
   rev (rev l) = l.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intro l.
+  induction l as [| n l IHl'].
+  - reflexivity.
+  - simpl. rewrite rev_app_distr. simpl. rewrite IHl'. reflexivity.
+Qed.
 
 (** 下面的练习有简短的解法，如果你开始发现情况已经复杂到你无法理清的程度，
     请后退一步并试着寻找更为简单的方法。 *)

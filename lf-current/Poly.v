@@ -339,7 +339,12 @@ Definition list123''' := [1; 2; 3].
 Theorem app_nil_r : forall (X:Type), forall l:list X,
   l ++ [] = l.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros x l.
+  induction l as [| h l' IHl'].
+  - reflexivity.
+  - simpl. rewrite IHl'. reflexivity.
+Qed.
+
 
 Theorem app_assoc : forall A (l m n:list A),
   l ++ m ++ n = (l ++ m) ++ n.
@@ -359,7 +364,10 @@ Proof.
 Theorem rev_app_distr: forall X (l1 l2 : list X),
   rev (l1 ++ l2) = rev l2 ++ rev l1.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros t l1 l2. induction l1 as [| n l1' IHl1'].
+  - simpl. rewrite app_nil_r. reflexivity.
+  - simpl. rewrite IHl1'. rewrite app_assoc. reflexivity.
+Qed.
 
 Theorem rev_involutive : forall X : Type, forall l : list X,
   rev (rev l) = l.

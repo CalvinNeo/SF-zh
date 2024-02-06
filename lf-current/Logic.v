@@ -798,14 +798,62 @@ Qed.
     “明显会终止”的。在下一章中，我们会了解如何_'归纳地'_定义命题，
     这是一种与之不同的技巧，有着其独特的优势和限制。 *)
 
+(* intros. simpl. exists x. split. *)
+
 (** **** 练习：3 星, standard (In_map_iff)  *)
+Lemma In_map_iff_fail1 :
+  forall (A B : Type) (f : A -> B) (l : list A) (y : B),
+    In y (map f l) <->
+    exists x, f x = y /\ In x l.
+Proof.
+  intros A B f l y. split.
+  induction l as [| h t IHl].
+  - simpl. intros. destruct H.
+  - intros. simpl. exists h. split.
+    + simpl in H. destruct H as [H1 | H2].
+      * apply H1.
+      * apply IHl in H2. simpl in H2. Abort.
+
+Lemma In_map_iff_ok :
+  forall (A B : Type) (f : A -> B) (l : list A) (y : B),
+    In y (map f l) <->
+    exists x, f x = y /\ In x l.
+Proof.
+  intros. split.
+  induction l as [|h t].
+  - simpl. intros [].
+  - simpl. intros [H | H].
+    + exists h. split. apply H. left. reflexivity.
+    + apply IHt in H. destruct H as [w [F I]].
+      exists w. split. apply F. right. apply I.
+  - intros [w [F I]].
+    rewrite <- F. apply In_map. apply I.
+Qed.
+
 Lemma In_map_iff :
   forall (A B : Type) (f : A -> B) (l : list A) (y : B),
     In y (map f l) <->
     exists x, f x = y /\ In x l.
 Proof.
   intros A B f l y. split.
-  (* 请在此处解答 *) Admitted.
+  induction l as [| h t IHl].
+  - simpl. intros. destruct H.
+  (* In y (map f (h :: t)) -> exists x : A, f x = y /\ In x (h :: t) *)
+  - simpl. intros [H | H].
+    + exists h. simpl. split.
+      * apply H.
+      * left. reflexivity.
+    (* f x != y *)
+    + apply IHl in H. destruct H as [w [h1 h2]].
+      (* now H is useable *)
+      exists w. split.
+      * apply h1.
+      * right. apply h2.
+  (* (exists x : A, f x = y /\ In x l) -> In y (map f l) *)
+  - intros [w [h1 h2]].
+    rewrite <- h1. apply In_map. exact h2.
+Qed.
+
 (** [] *)
 
 (** **** 练习：2 星, standard (In_app_iff)  *)

@@ -735,7 +735,6 @@ Proof.
 Qed.
 
 
-(**
 (** [] *)
 
 (** **** 练习：2 星, standard, recommended (flat_map) 
@@ -892,10 +891,28 @@ Proof. reflexivity. Qed.
     更大或许会有所帮助。也就是说，你或许会遇到 [simpl] 无法解决但 [reflexivity]
     可以解决的目标。） *)
 
+(*
+Theorem app_assoc : forall A (l m n:list A),
+  l ++ m ++ n = (l ++ m) ++ n.
+*)
+
+Theorem fold_length_1: forall (X : Type) (l1 : list X) (l2 : list X),
+  fold_length (l1 ++ l2) = fold_length l1 + fold_length l2.
+Proof.
+  intros tx l1.
+  induction l1.
+  - reflexivity.
+  - intros l2. simpl. Abort.
+
 Theorem fold_length_correct : forall X (l : list X),
   fold_length l = length l.
 Proof.
-(* 请在此处解答 *) Admitted.
+  intros tx l.
+  induction l.
+  - reflexivity.
+  - simpl. rewrite <- IHl. simpl. reflexivity.
+Qed.
+
 (** [] *)
 
 (** **** 练习：3 星, standard (fold_map) 
@@ -936,8 +953,8 @@ Definition prod_curry {X Y Z : Type}
     然后在下面证明它们互为反函数的定理。 *)
 
 Definition prod_uncurry {X Y Z : Type}
-  (f : X -> Y -> Z) (p : X * Y) : Z
-  (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
+  (f : X -> Y -> Z) (p : X * Y) : Z := (f (fst p)) (snd p).
+  
 
 (** 举一个柯里化用途的（平凡的）例子，我们可以用它来缩短之前看到的一个例子： *)
 
@@ -955,15 +972,17 @@ Theorem uncurry_curry : forall (X Y Z : Type)
                         x y,
   prod_curry (prod_uncurry f) x y = f x y.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  reflexivity.
+Qed.
 
 Theorem curry_uncurry : forall (X Y Z : Type)
                         (f : (X * Y) -> Z) (p : X * Y),
   prod_uncurry (prod_curry f) p = f p.
 Proof.
-  (* 请在此处解答 *) Admitted.
-(** [] *)
-
+  intros.
+  destruct p.
+  reflexivity.
+Qed.
 (** **** 练习：2 星, advanced (nth_error_informal) 
 
     回想 [nth_error] 函数的定义：

@@ -126,8 +126,16 @@ Qed.
 Example and_exercise :
   forall n m : nat, n + m = 0 -> n = 0 /\ m = 0.
 Proof.
-  (* 请在此处解答 *) Admitted.
-(** [] *)
+  intros n.
+  split.
+  - destruct n as [|n'].
+    + reflexivity.
+    + discriminate.
+  - destruct n as [|n'].
+    + apply H.
+    + discriminate.
+Qed.
+
 
 (** 以上就是证明合取语句的方法。要反过来使用，即_'使用'_合取前提来帮助证明时，
     我们会采用 [destruct] 策略。
@@ -199,7 +207,12 @@ Proof.
 Lemma proj2 : forall P Q : Prop,
   P /\ Q -> Q.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros P Q.
+  intros H.
+  destruct H as [_ HQ].
+  apply HQ.
+Qed.
+
 (** [] *)
 
 (** 最后，我们有时需要重新排列合取语句的顺序，或者对多部分的合取语句进行分组。
@@ -223,7 +236,13 @@ Theorem and_assoc : forall P Q R : Prop,
   P /\ (Q /\ R) -> (P /\ Q) /\ R.
 Proof.
   intros P Q R [HP [HQ HR]].
-  (* 请在此处解答 *) Admitted.
+  split.
+  - split.
+    + apply HP.
+    + apply HQ.
+  - apply HR.
+Qed.
+
 (** [] *)
 
 (** 顺便一提，中缀记法 [/\] 只是 [and A B] 的语法糖而已；
@@ -281,14 +300,30 @@ Qed.
 Lemma mult_eq_0 :
   forall n m, n * m = 0 -> n = 0 \/ m = 0.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros n m H.
+  destruct n as [|n'].
+  - simpl. left. reflexivity.
+  - simpl. induction m.
+    + right. reflexivity.
+    + simpl. destruct m.
+      * right. discriminate.
+      * right. discriminate.
+Qed.
+  
+
 (** [] *)
 
 (** **** 练习：1 星, standard (or_commut)  *)
 Theorem or_commut : forall P Q : Prop,
   P \/ Q  -> Q \/ P.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros.
+  destruct H as [Hl | Hr].
+  - right. apply Hl.
+  - left. apply Hr.
+Qed.
+
+
 (** [] *)
 
 (* ================================================================= *)
@@ -324,7 +359,9 @@ Theorem ex_falso_quodlibet : forall (P:Prop),
 Proof.
   (* 课上已完成 *)
   intros P contra.
-  destruct contra.  Qed.
+  destruct contra.
+Qed.
+
 
 (** 拉丁文 _'ex falso quodlibet'_ 的字面意思是“从谬误出发，
     你能够证明任何你想要的”，这也是爆炸原理的另一个广为人知的名字。 *)
@@ -336,7 +373,11 @@ Proof.
 Fact not_implies_our_not : forall (P:Prop),
   ~ P -> (forall (Q:Prop), P -> Q).
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros.
+  destruct H.
+  apply H0.
+Qed.
+
 (** [] *)
 
 (** 不等性是十分常见的否定句的例子，，它有一个特别的记法 [x <> y]：
@@ -399,17 +440,40 @@ Definition manual_grade_for_double_neg_inf : option (nat*string) := None.
 (** [] *)
 
 (** **** 练习：2 星, standard, recommended (contrapositive)  *)
+Theorem contrapositive_ask_question : forall (P Q : Prop),
+  (P -> Q) -> (~Q -> ~P).
+Proof.
+  intros.
+  destruct H0.
+  apply H.
+  Fail exact P. Abort.
+  
 Theorem contrapositive : forall (P Q : Prop),
   (P -> Q) -> (~Q -> ~P).
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros.
+  unfold not.
+  unfold not in H0.
+  intros.
+  apply H0 in H. 
+  apply H.
+  apply H1.
+Qed.
+
 (** [] *)
 
 (** **** 练习：1 星, standard (not_both_true_and_false)  *)
 Theorem not_both_true_and_false : forall P : Prop,
   ~ (P /\ ~P).
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros.
+  unfold not.
+  intros.
+  destruct H.
+  apply H0.
+  apply H.
+Qed.
+
 (** [] *)
 
 (** **** 练习：1 星, advanced (informal_not_PNP) 
@@ -513,13 +577,30 @@ Qed.
 Theorem iff_refl : forall P : Prop,
   P <-> P.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros.
+  unfold iff.
+  split.
+  - intros. apply H.
+  - intros. apply H.
+Qed.
 
 Theorem iff_trans : forall P Q R : Prop,
   (P <-> Q) -> (Q <-> R) -> (P <-> R).
 Proof.
-  (* 请在此处解答 *) Admitted.
-(** [] *)
+  intros.
+  unfold iff in H.
+  unfold iff in H0.
+  unfold iff.
+  destruct H.
+  destruct H0.
+  split.
+  intros.
+  apply H0. apply H. apply H3.
+  intros.
+  apply H1. apply H2. apply H3.
+Qed.
+
+(** [] *) 
 
 (** **** 练习：3 星, standard (or_distributes_over_and)  *)
 Theorem or_distributes_over_and : forall P Q R : Prop,
@@ -631,7 +712,13 @@ Proof.
 Theorem dist_not_exists : forall (X:Type) (P : X -> Prop),
   (forall x, P x) -> ~ (exists x, ~ P x).
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros.
+  unfold not.
+  intros.
+  destruct H0.
+  apply H0.
+  apply H.
+Qed.
 (** [] *)
 
 (** **** 练习：2 星, standard (dist_exists_or) 

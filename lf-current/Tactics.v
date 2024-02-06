@@ -276,6 +276,21 @@ Proof.
   reflexivity.
 Qed.
 
+Example injection_ex3_asked_question : forall (X : Type) (x y z : X) (l j : list X),
+  x :: y :: l = z :: j ->
+  j = z :: l ->
+  x = y.
+Proof.
+  intros t x y z l j.
+  intros H1 H2.
+  injection H1 as Hnm1.
+  assert (H3: z :: j = z :: z :: l).
+  replace j with (z :: l).
+  reflexivity.
+  injection H3.
+Abort.
+
+
 (** [] *)
 
 (** So much for injectivity of constructors.  What about disjointness?
@@ -629,6 +644,15 @@ Proof.
       rewrite <- plus_n_Sm.
       rewrite <- plus_n_Sm.
       intro H4. Abort.
+
+Theorem plus_n_n_injective_asked_question : forall n m,
+     n + n = m + m ->
+     n = m.
+Proof.
+  intros n. induction n as [| n' IHn'].
+  - intros [] eq. reflexivity. discriminate.
+  - intros m eq. Fail apply plus_id_example with (n:=(S n')). Abort.
+
 
 Theorem plus_n_n_injective : forall n m,
      n + n = m + m ->

@@ -345,6 +345,7 @@ Proof.
   - simpl. rewrite IHl'. reflexivity.
 Qed.
 
+Search plus.
 
 Theorem app_assoc : forall A (l m n:list A),
   l ++ m ++ n = (l ++ m) ++ n.
@@ -354,7 +355,11 @@ Proof.
 Lemma app_length : forall (X:Type) (l1 l2 : list X),
   length (l1 ++ l2) = length l1 + length l2.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros t l1. induction l1 as [| l' IH1' IH2'].
+  - reflexivity.
+  - simpl. intros l2. rewrite plus_n_Sm. rewrite IH2'. apply plus_n_Sm.
+Qed.
+
 (** [] *)
 
 (** **** 练习：2 星, standard, optional (more_poly_exercises) 
@@ -372,7 +377,12 @@ Qed.
 Theorem rev_involutive : forall X : Type, forall l : list X,
   rev (rev l) = l.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros tx l.
+  induction l.
+  - simpl. reflexivity.
+  - simpl. rewrite rev_app_distr. rewrite IHl. simpl. reflexivity.
+Qed.
+
 (** [] *)
 
 (* ================================================================= *)
@@ -447,13 +457,29 @@ Fixpoint combine {X Y : Type} (lx : list X) (ly : list Y)
     请在下面完成 [split] 的定义，确保它能够通过给定的单元测试。 *)
 
 Fixpoint split {X Y : Type} (l : list (X*Y))
-               : (list X) * (list Y)
-  (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
+               : (list X) * (list Y) :=
+  match l with
+    | [] => ([], [])
+    | (x, y) :: t => (x :: (fst (split t)), y :: (snd (split t)))
+  end.
+
+(*
+Fixpoint split {X Y : Type} (l : list (X*Y))
+               : (list X) * (list Y) :=
+  match l with
+  | [] => ([], [])
+  | (x, y) :: t =>
+      match split t with
+      | (lx, ly) => (x :: lx, y :: ly)
+      end
+  end.
+*)
 
 Example test_split:
   split [(1,false);(2,false)] = ([1;2],[false;false]).
 Proof.
-(* 请在此处解答 *) Admitted.
+  reflexivity.
+Qed.
 (** [] *)
 
 (* ================================================================= *)
@@ -494,17 +520,21 @@ Proof. reflexivity. Qed.
 
     请完成上一章中 [hd_error] 的多态定义，确保它能通过下方的单元测试。 *)
 
-Definition hd_error {X : Type} (l : list X) : option X
-  (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
+Definition hd_error {X : Type} (l : list X) : option X :=
+  match l with
+  | [] => None
+  | h :: t => Some h
+  end.
 
 (** 再说一遍，要强制将隐式参数转为显式参数，我们可以在函数名前使用 [@]。 *)
 
 Check @hd_error : forall X : Type, list X -> option X.
 
 Example test_hd_error1 : hd_error [1;2] = Some 1.
- (* 请在此处解答 *) Admitted.
+Proof. reflexivity. Qed.
 Example test_hd_error2 : hd_error  [[1];[2]]  = Some [1].
- (* 请在此处解答 *) Admitted.
+Proof. reflexivity. Qed.
+
 (** [] *)
 
 (* ################################################################# *)
@@ -606,16 +636,17 @@ Proof. reflexivity. Qed.
     使用 [filter]（而非 [Fixpoint]）来编写 Coq 函数 [filter_even_gt7]，
     它接受一个自然数列表作为输入，返回一个只包含大于 [7] 的偶数的列表。 *)
 
-Definition filter_even_gt7 (l : list nat) : list nat
-  (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
+
+Definition filter_even_gt7 (l : list nat) : list nat :=
+  filter (fun n => andb (evenb n) (7 <=? n)) l.
 
 Example test_filter_even_gt7_1 :
   filter_even_gt7 [1;2;6;9;10;3;12;8] = [10;12;8].
- (* 请在此处解答 *) Admitted.
+Proof. reflexivity. Qed.
 
 Example test_filter_even_gt7_2 :
   filter_even_gt7 [5;2;6;19;129] = [].
- (* 请在此处解答 *) Admitted.
+Proof. reflexivity. Qed.
 (** [] *)
 
 (** **** 练习：3 星, standard (partition) 
@@ -683,10 +714,28 @@ Proof. reflexivity. Qed.
 
     请证明 [map] 和 [rev] 可交换。你可能需要定义一个辅助引理 *)
 
+Search rev_app_distr.
+
+Theorem map_dist : forall (X Y : Type) (f : X -> Y) (l1 : list X) (l2 : list X),
+  map f (l1 ++ l2) = (map f l1) ++ (map f l2).
+Proof.
+  intros tx ty f l1.
+  induction l1.
+  - simpl. reflexivity.
+  - simpl. intros l2. rewrite IHl1. reflexivity.
+Qed.
+
 Theorem map_rev : forall (X Y : Type) (f : X -> Y) (l : list X),
   map f (rev l) = rev (map f l).
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros tx ty f l.
+  induction l.
+  - reflexivity.
+  - simpl. rewrite map_dist. simpl. rewrite IHl. reflexivity.
+Qed.
+
+
+(**
 (** [] *)
 
 (** **** 练习：2 星, standard, recommended (flat_map) 

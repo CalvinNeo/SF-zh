@@ -445,7 +445,7 @@ Module NatPlayground.
 (** ** 数值 *)
 
 (** 目前我们定义的所有类型都是有限的。无论是像 [day], [bool] 和 [bit] 
-    这样的“枚举类型”，抑或是像 [nybble] 这样基于“枚举类型”的元组类型，
+    这样的“枚举类型”，抑或是像 [nyble] 这样基于“枚举类型”的元组类型，
     本质上都是有限的集合。而自然数（natural numbers）是一个无限集合，
     因此我们需要一种更强大的类型声明方式来表示它们。
 
@@ -1244,7 +1244,7 @@ Proof.
   + destruct c as [true|false].
     - simpl. intros H. rewrite -> H. reflexivity.
     - reflexivity.
-
+Qed.
 
 (** [] *)
 

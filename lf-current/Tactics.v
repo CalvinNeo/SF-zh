@@ -647,7 +647,6 @@ Proof.
       reflexivity.
 Qed.
 
-(**
 (** [] *)
 
 (** 在 [induction] 之前做一些 [intros] 来获得更一般归纳假设并不总是奏效。
@@ -742,11 +741,19 @@ Qed.
 
     通过对 [l] 进行归纳来证明它。 *)
 
+Check nth_error.
+
 Theorem nth_error_after_last: forall (n : nat) (X : Type) (l : list X),
      length l = n ->
      nth_error l n = None.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros n x l H.
+  generalize dependent n.
+  induction l as [| l' z IHl].
+  - simpl. intros n eq. reflexivity.
+  - intros n H. rewrite <- H. simpl. apply IHl. reflexivity.
+Qed.
+  
 (** [] *)
 
 (* ################################################################# *)
@@ -900,11 +907,56 @@ Fixpoint split {X Y : Type} (l : list (X*Y))
 
 (** 请证明 [split] 和 [combine] 在以下概念下互为反函数： *)
 
+Theorem fst_eq : forall X Y (p1 : X * Y) (p2 : X * Y),
+  p1 = p2 -> fst p1 = fst p2.
+Proof.
+  intros x y p1 p2 H.
+  apply f_equal.
+  exact H.
+Qed.
+
+Theorem rev_fst_eq : forall X Y (p1 : X * Y) (p2 : X * Y),
+  fst p1 = fst p2 -> p1 = p2.
+Proof.
+  intros x y p1 p2 H.
+  Fail injection H as Hnm. Abort.
+
+(*
+Theorem split_next : forall X Y (x : X) (y : Y) (l : list (X * Y)),
+  split ((x, y) :: l) = (x :: (fst (split l)), y :: (snd (split l))).
+Proof.
+  intros tx ty x y l.
+  induction l as [| l' IH IH2].
+  - simpl. reflexivity.
+  - 
+*)
+
+Theorem tail_eq: forall (X: Type) (h: X) (l1 l2: list X),
+    l1 = l2 -> h :: l1 = h :: l2.
+Proof.
+  intros. apply f_equal. apply H.
+Qed.
+
 Theorem combine_split : forall X Y (l : list (X * Y)) l1 l2,
   split l = (l1, l2) ->
   combine l1 l2 = l.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros tx ty l.
+  induction l as [| h t IH].
+  - simpl. intros l1 l2 H. simpl in H. inversion H. reflexivity.
+  - intros r1 r2 H.
+    destruct h as [x1 x2].
+    inversion H.
+    simpl in H1.
+    simpl.
+    destruct (split t) as [xt yt].
+    inversion H1.
+    simpl.
+    apply tail_eq.
+    apply IH.
+    reflexivity.
+Qed.
+
 (** [] *)
 
 (** [destruct] 策略的 [eqn:] 部分是可选的：目前，我们大部分时间都会包含它，

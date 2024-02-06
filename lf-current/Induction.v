@@ -560,11 +560,37 @@ Proof.
   - simpl. rewrite IHn'. rewrite plus_assoc. reflexivity.
 Qed.
 
+Theorem mult_assoc_try1 : forall n m p : nat,
+  n * (m * p) = (n * m) * p.
+Proof.
+  intros n.
+  induction n as [| n' IHn] eqn: eq1.
+  - reflexivity.
+  - intros m p. simpl. induction m as [| m' IHm].
+    + simpl. assert (H1: n' * 0 = 0). apply mult_0_r. rewrite H1. reflexivity.
+    + simpl. Abort.
+
+Theorem mult_assoc_try2 : forall n m p : nat,
+  n * (m * p) = (n * m) * p.
+Proof.
+  intros n m.
+  induction m as [| m' IHm].
+  - rewrite mult_0_r. simpl. rewrite mult_0_r. reflexivity.
+  - simpl. Abort.
 
 Theorem mult_assoc : forall n m p : nat,
   n * (m * p) = (n * m) * p.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros n.
+  induction n.
+  - reflexivity.
+  - simpl. intros m p.
+    rewrite mult_plus_distr_r.
+    rewrite IHn.
+    reflexivity.
+Qed.
+
+
 (** [] *)
 
 (** **** 练习：2 星, standard, optional (eqb_refl) 
@@ -576,7 +602,11 @@ Proof.
 Theorem eqb_refl : forall n : nat,
   true = (n =? n).
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros n. induction n as [| n' IHn].
+  - reflexivity.
+  - simpl. exact IHn.
+Qed.
+
 (** [] *)
 
 (** **** 练习：2 星, standard, optional (plus_swap') 

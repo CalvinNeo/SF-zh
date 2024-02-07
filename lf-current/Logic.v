@@ -1608,7 +1608,16 @@ Theorem not_exists_dist :
   forall (X:Type) (P : X -> Prop),
     ~ (exists x, ~ P x) -> (forall x, P x).
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros.
+  unfold excluded_middle in H.
+  unfold not in H0.
+  unfold not in H.
+  assert (P x \/ ~ P x).
+  apply H.
+  destruct H1.
+  - apply H1.
+  - unfold not in H1. exfalso. apply H0. exists x. exact H1.
+Qed.
 (** [] *)
 
 (** **** 练习：5 星, standard, optional (classical_axioms) 
@@ -1635,6 +1644,28 @@ Definition de_morgan_not_and_not := forall P Q:Prop,
 
 Definition implies_to_or := forall P Q:Prop,
   (P->Q) -> (~P\/Q).
+
+Theorem excluded_middle_2_double_negation_elimination :
+  excluded_middle <-> double_negation_elimination.
+Proof.
+  split.
+  - unfold excluded_middle.
+    unfold double_negation_elimination.
+    unfold not.
+    intros.
+    destruct (H P).
+    + apply H1.
+    + exfalso. apply H1. apply H0 in H1. destruct H1.
+  - unfold excluded_middle.
+    unfold double_negation_elimination.
+    unfold not.
+    intros.
+    (* Get rid of forall *)
+    apply H.
+    intros.
+    apply H0.
+    right. intros. apply H0. left. apply H1.
+Qed.
 
 (* 请在此处解答
 

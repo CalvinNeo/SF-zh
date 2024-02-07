@@ -425,15 +425,18 @@ Theorem double_neg : forall P : Prop,
   P -> ~~P.
 Proof.
   (* 课上已完成 *)
-  intros P H. unfold not. intros G. apply G. apply H.  Qed.
+  intros P H.
+  unfold not.
+  intros G.
+  apply G.
+  apply H.
+Qed.
 
 (** **** 练习：2 星, advanced (double_neg_inf) 
 
     请写出 [double_neg] 的非形式化证明：
 
    _'定理'_：对于任何命题 [P] 而言，[P] 蕴含 [~~P]。 *)
-
-(* 请在此处解答 *)
 
 (* 请勿修改下面这一行： *)
 Definition manual_grade_for_double_neg_inf : option (nat*string) := None.
@@ -873,15 +876,36 @@ Proof.
     中的所有元素成立。为了确定你的定义是正确的，请在下方证明 [All_In] 引理。
     （当然，你的定义_'不应该'_为了通过测试就把 [All_In] 的左边复述一遍。 ） *)
 
-Fixpoint All {T : Type} (P : T -> Prop) (l : list T) : Prop
-  (* 将本行替换成 ":= _你的_定义_ ." *). Admitted.
+Fixpoint All {T : Type} (P : T -> Prop) (l : list T) : Prop :=
+  match l with
+  | [] => True
+  | h :: t => (P h) /\ (All P t)
+  end.
 
 Lemma All_In :
   forall T (P : T -> Prop) (l : list T),
     (forall x, In x l -> P x) <->
     All P l.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros.
+  split.
+  - intros. induction l.
+    + reflexivity.
+    + simpl. simpl in IHl. simpl in H. split.
+      * apply H. left. reflexivity.
+      * apply IHl. intros. apply H. right. apply H0.
+  - induction l.
+    (* H0 : In x [ ] *)
+    + intros. destruct H0.
+    + intros. destruct H.
+      * (* Why can't just apply?
+        assert(H3: forall x : T, In x l -> P x).
+        apply IHl. apply H1. 
+        *)
+        destruct H0. rewrite <- H0. apply H.
+        apply IHl. apply H1. apply H0.
+Qed.
+
 (** [] *)
 
 (** **** 练习：3 星, standard (combine_odd_even) 
@@ -1340,10 +1364,27 @@ Qed.
 
     以下引理将本章中讨论的命题联结词与对应的布尔操作关联了起来。 *)
 
+Search eqb_eq.
+
 Lemma andb_true_iff : forall b1 b2:bool,
   b1 && b2 = true <-> b1 = true /\ b2 = true.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros.
+  split.
+  - intros. split.
+    + destruct b1.
+      * reflexivity.
+      * discriminate.
+    + destruct b2.
+      * reflexivity.
+      (* why can't just discriminate *)
+      * destruct b1.
+        -- discriminate.
+        -- discriminate.
+  - intros. destruct H.
+    rewrite H. apply H0.
+Qed.
+
 
 Lemma orb_true_iff : forall b1 b2,
   b1 || b2 = true <-> b1 = true \/ b2 = true.
@@ -1493,10 +1534,63 @@ Qed.
     [~ (P \/ ~P)] 和 [~ ~ (P \/ ~P)]（因为根据引理 [double_neg]，[P] 蕴含 [~ ~ P]），
     而这会产生矛盾。但因为我们不能，所以将 [P \/ ~P] 作为公理加入是安全的。 *)
 
+Theorem excluded_middle_irrefutable_try1: forall (P:Prop),
+  ~ ~ (P \/ ~ P).
+Proof.
+  intros.
+  unfold not.
+  intros.
+  apply H.
+  (* How to destruct P? *)
+  replace (P -> False) with (~P).
+  - admit.
+  - reflexivity.
+Abort.
+
+Theorem excluded_middle_irrefutable_try2: forall (P:Prop),
+  ~ ~ (P \/ ~ P).
+Proof.
+  intros.
+  unfold not.
+  intros.
+  apply H.
+  assert (R: exists b: bool, P -> b = true).
+  - intros. exists true. intros. reflexivity.
+  - replace (P -> False) with (~P).
+    + Fail apply R in restricted_excluded_middle.
+    (* + reflexivity. *)
+Abort.
+
+Theorem excluded_middle_irrefutable_try3: forall (P:Prop),
+  ~ ~ (P \/ ~ P).
+Proof.
+  intros.
+  unfold not.
+  intros.
+  apply H.
+  assert (R: exists b: bool, P -> b = true).
+  - intros. exists true. intros. reflexivity.
+  - apply (restricted_excluded_middle P true).
+    split.
+    + intros. reflexivity.
+    + intros. Fail apply H.
+Abort.
+
 Theorem excluded_middle_irrefutable: forall (P:Prop),
   ~ ~ (P \/ ~ P).
 Proof.
-  (* 请在此处解答 *) Admitted.
+  unfold not.
+  intros.
+  apply H.
+  right.
+  (* (P -> False) *)
+  intros.
+  (* H: P \/ (P -> False) -> False *)
+  apply H.
+  left.
+  apply H0.
+Qed.
+
 (** [] *)
 
 (** **** 练习：3 星, advanced (not_exists_dist) 

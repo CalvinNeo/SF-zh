@@ -2,7 +2,6 @@
 
 Set Warnings "-notation-overridden,-parsing".
 From LF Require Export Logic.
-Require Coq.omega.Omega.
 
 (* ################################################################# *)
 (** * 归纳定义的命题 *)
@@ -126,11 +125,18 @@ Qed.
 
 (** 更一般地，我们可以证明以任意数乘 2 是偶数： *)
 
+Search double.
+
 (** **** 练习：1 星, standard (ev_double)  *)
 Theorem ev_double : forall n,
   ev (double n).
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros.
+  induction n.
+  - unfold double. apply ev_0.
+  - simpl. apply ev_SS. apply IHn.
+Qed.
+
 (** [] *)
 
 (* ################################################################# *)
@@ -282,7 +288,11 @@ Theorem one_not_even' : ~ ev 1.
 Theorem SSSSev__even : forall n,
   ev (S (S (S (S n)))) -> ev n.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros n H.
+  inversion H.
+  inversion H1.
+  apply H3.
+Qed.
 (** [] *)
 
 (** **** 练习：1 星, standard (ev5_nonsense) 
@@ -292,7 +302,12 @@ Proof.
 Theorem ev5_nonsense :
   ev 5 -> 2 + 2 = 9.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros H.
+  inversion H.
+  inversion H1.
+  inversion H3.
+Qed.
+
 (** [] *)
 
 (** The [inversion] tactic does quite a bit of work. For
@@ -422,10 +437,23 @@ Qed.
 
 (** 下面的练习提供了一些简单的例子，来帮助你熟悉这项技术。 *)
 
+Theorem evSS_ev2 : forall n, ev n -> ev (S (S n)).
+Proof.
+  intros.
+  destruct H.
+  - apply ev_SS. apply ev_0.
+  - apply ev_SS. apply ev_SS. apply H.
+Qed.
+
 (** **** 练习：2 星, standard (ev_sum)  *)
 Theorem ev_sum : forall n m, ev n -> ev m -> ev (n + m).
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros.
+  induction H.
+  - simpl. apply H0.
+  - simpl. apply evSS_ev2. apply IHev.
+Qed.
+
 (** [] *)
 
 (** **** 练习：4 星, advanced, optional (ev'_ev) 
@@ -441,9 +469,30 @@ Inductive ev' : nat -> Prop :=
 (** 请证明这个定义在逻辑上等同于前述定义。为了精简证明，请使用 [Logic]
     一章中将定理应用到参数的技术，注意同样的技术也可用于归纳定义的命题的构造子。 *)
 
-Theorem ev'_ev : forall n, ev' n <-> ev n.
+Theorem ev'_ev_try1 : forall n, ev' n <-> ev n.
+
 Proof.
- (* 请在此处解答 *) Admitted.
+  intros.
+  split.
+  - induction n.
+    + intros. apply ev_0. 
+    + simpl. intros. inversion H. apply ev_SS. apply ev_0.
+      rewrite <- H1 in H. apply ev_sum. Abort.
+
+Theorem ev'_ev : forall n, ev' n <-> ev n.
+
+Proof.
+  intros.
+  split.
+  - intros E. induction E.
+    + apply ev_0.
+    + apply ev_SS. apply ev_0.
+    + apply ev_sum. apply IHE1. apply IHE2.
+  - intros E. induction E.
+    + apply ev'_0.
+    + apply (ev'_sum 2). apply ev'_2. apply IHE.
+Qed.
+
 (** [] *)
 
 (** **** 练习：3 星, advanced, recommended (ev_ev__ev) 
@@ -465,6 +514,7 @@ Theorem ev_plus_plus : forall n m p,
   ev (n+m) -> ev (n+p) -> ev (m+p).
 Proof.
   (* 请在此处解答 *) Admitted.
+  
 (** [] *)
 
 (* ################################################################# *)
@@ -513,7 +563,7 @@ Theorem test_le3 :
   (2 <= 1) -> 2 + 2 = 5.
 Proof.
   (* 课上已完成 *)
-  intros H. inversion H. inversion H2.  Qed.
+  intros H. inversion H. inversion H2. Qed.
 
 (** 现在“严格小于”关系 [n < m] 可以使用 [le] 来定义。 *)
 
@@ -568,35 +618,152 @@ Inductive next_ev : nat -> nat -> Prop :=
     这里展示一些 [<=] 和 [<] 关系的事实，我们在接下来的课程中将会用到他们。
     证明他们将会是非常有益的练习。 *)
 
+Lemma le_trans_try1 : forall m n o, m <= n -> n <= o -> m <= o.
+Proof.
+  intros.
+  inversion H.
+  apply H0.
+  rewrite <- H2 in H0.
+  apply le_S in H0. inversion H0.
+  rewrite <- H4. apply H1. Abort.
+
 Lemma le_trans : forall m n o, m <= n -> n <= o -> m <= o.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros.
+  generalize dependent o.
+  induction H.
+  - intros. exact H0.
+  - intros. apply IHle.
+    induction H0.
+    + apply le_S. apply le_n.
+    + apply le_S. apply IHle0.
+Qed.
 
 Theorem O_le_n : forall n,
   0 <= n.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros.
+  induction n.
+  - apply le_n.
+  - apply le_S. apply IHn.
+Qed.
 
 Theorem n_le_m__Sn_le_Sm : forall n m,
   n <= m -> S n <= S m.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros.
+  induction H.
+  - apply le_n.
+  - apply le_S. apply IHle.
+Qed.
 
 Theorem Sn_le_Sm__n_le_m : forall n m,
   S n <= S m -> n <= m.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros n m. 
+  generalize dependent n.
+  induction m.
+  - intros. inversion H.
+    apply le_n. inversion H1.
+  - intros. inversion H. trivial.
+    apply le_S. apply IHm in H1. apply H1.
+Qed.
+    
 
 Theorem le_plus_l : forall a b,
   a <= a + b.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros.
+  generalize dependent a.
+  induction a.
+  - induction b.
+    + simpl. apply le_n.
+    + simpl. simpl in IHb. apply le_S. apply IHb.
+  - induction b.
+    + assert(H3: a <= a -> S a <= S a).
+      intros. apply le_n. simpl. apply n_le_m__Sn_le_Sm. apply IHa.
+    + simpl. inversion IHa. rewrite <- H. rewrite <- H. apply le_n.
+      apply n_le_m__Sn_le_Sm. rewrite H. apply IHa.
+Qed.
+
+Theorem plus_n_O_r : forall a,
+  a + 0 = a.
+Proof.
+  auto.
+Qed.
+
+Theorem le_S_ab : forall a b,
+  a <= b -> a <= S b.
+Proof.
+  intros.
+  induction a.
+  - inversion H. apply le_S. apply le_n.
+    rewrite H1. apply O_le_n.
+  - apply le_S. apply H.
+Qed.
+
+Search (forall a b,
+  S a <= b -> a <= b).
+
+(* Print (Le.le_Sn_le_stt). *)
+
+Theorem Sn_n1 : forall a,
+  S a = a + 1.
+Proof.
+  intros.
+  destruct a.
+  - reflexivity.
+  - rewrite <- plus_n_Sm. simpl. apply plus_n_O.
+Qed.
+
+
+Theorem le_S_ab2_try : forall a b,
+  S a <= b -> a <= b.
+Proof.
+  intros a b. 
+  induction a.
+  - intros. inversion H.
+    apply le_S. apply le_n. apply O_le_n.
+  - intros. inversion H. apply le_S. apply le_n.
+    
+Abort.
+
+(* Must generalize dependent n *)
+Theorem le_S_ab2 : forall a b,
+  S a <= b -> a <= b.
+Proof.
+  intros a b. 
+  generalize dependent a.
+  induction b.
+  - intros. inversion H.
+  - intros. inversion H. apply le_S. apply le_n.
+    apply le_S. apply IHb. apply H1.
+Qed.
+
+Theorem rev_le_plus_l_try1 : forall a b c,
+  a + b <= c -> a <= c.
+Proof.
+  intros.
+  induction b.
+  - rewrite plus_n_O_r in H. apply H.
+  - apply IHb. induction a.
+    + apply le_S_ab2 in H. apply H.
+    + 
+Abort.
 
 Theorem plus_le : forall n1 n2 m,
   n1 + n2 <= m ->
   n1 <= m /\ n2 <= m.
 Proof.
- (* 请在此处解答 *) Admitted.
+  intros. split.
+  - induction n2.
+    + simpl in H. rewrite <- plus_n_O in H. exact H.
+    + apply IHn2. rewrite <- plus_n_Sm in H. inversion H.
+      apply le_S. apply le_n. rewrite H1. apply le_S in H.
+      apply Sn_le_Sm__n_le_m in H. apply H.
+  - induction n1.
+    apply H. apply IHn1. apply le_S_ab2. rewrite <- plus_Sn_m. apply H.
+Qed.
 
 (** Hint: the next one may be easiest to prove by induction on [n]. *)
 
@@ -615,7 +782,7 @@ Theorem plus_lt : forall n1 n2 m,
   n1 + n2 < m ->
   n1 < m /\ n2 < m.
 Proof.
-(* 请在此处解答 *) Admitted.
+  (* 请在此处解答 *) Admitted.
 
 Theorem leb_complete : forall n m,
   n <=? m = true -> n <= m.

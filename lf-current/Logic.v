@@ -1385,6 +1385,39 @@ Proof.
     rewrite H. apply H0.
 Qed.
 
+Search (forall n m, n =? m -> n = m).
+
+Lemma false_true: (false = true) -> False.
+Proof.
+  intros.
+  simpl in H.
+  discriminate H.
+Qed.
+
+Lemma false_true2: (false = true) = False.
+Proof. Admitted.
+
+Lemma false_true3: False -> (false = true).
+Proof.
+  intros.
+  destruct H.
+Qed.
+
+Lemma andb_true_iff2 : forall b1 b2 : bool,
+  b1 && b2 = true <-> b1 = true /\ b2 = true.
+Proof.
+  intros.
+  split.
+  - intros. split.
+    + destruct b1.
+      * reflexivity.
+      * discriminate.
+    + destruct b2.
+      * reflexivity.
+      * assert (H3: (false = true) = False).
+        apply false_true2.
+        rewrite H3.
+Abort.
 
 Lemma orb_true_iff : forall b1 b2,
   b1 || b2 = true <-> b1 = true \/ b2 = true.
@@ -1616,8 +1649,9 @@ Proof.
   apply H.
   destruct H1.
   - apply H1.
-  - unfold not in H1. exfalso. apply H0. exists x. exact H1.
+  - unfold not in H1. destruct H0. exists x. apply H1.
 Qed.
+
 (** [] *)
 
 (** **** 练习：5 星, standard, optional (classical_axioms) 
@@ -1666,6 +1700,26 @@ Proof.
     apply H0.
     right. intros. apply H0. left. apply H1.
 Qed.
+
+Theorem excluded_middle_2_double_negation_elimination2 :
+  excluded_middle <-> double_negation_elimination.
+Proof.
+  split.
+  - unfold excluded_middle.
+    unfold double_negation_elimination.
+    unfold not.
+    intros.
+    destruct (H P).
+    + apply H1.
+    + exfalso. apply H1. apply H0 in H1. destruct H1.
+  - unfold excluded_middle.
+    unfold double_negation_elimination.
+    unfold not.
+    intros.
+    (* Get rid of forall *)
+    right. apply H. intros. apply H0. intros. apply H0 in H.
+    + apply H0. intros. Abort.
+
 
 (* 请在此处解答
 

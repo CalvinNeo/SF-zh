@@ -767,22 +767,81 @@ Qed.
 
 (** Hint: the next one may be easiest to prove by induction on [n]. *)
 
+Theorem add_le_cases_helper : forall n m q,
+    S n + m <= q -> S m <= q.
+Proof.
+    intros.
+    induction n.
+    simpl in H. exact H.
+    apply IHn. apply le_S_ab2. simpl in H. apply H.
+Qed.
+
+Theorem add_le_cases_try1 : forall a b,
+  S a <= b -> a <= b.
+Proof.
+  intros a b. 
+  generalize dependent a.
+  induction b.
+  - intros. inversion H.
+  - intros. inversion H. apply le_S. apply le_n.
+    apply le_S. apply IHb. apply H1.
+Qed.
+
+
+Theorem add_le_cases_try2 : forall n m p q,
+    n + m <= p + q -> n <= p \/ m <= q.
+Proof.
+    intros.
+    generalize dependent p.
+    induction n. left. apply O_le_n.
+    intros. destruct p.
+    * right. rewrite plus_O_n in H. apply le_S_ab2.
+      apply add_le_cases_helper with (n:=n). exact H.
+    * left. apply n_le_m__Sn_le_Sm. destruct (IHn p). simpl in H.
+      apply Sn_le_Sm__n_le_m. exact H. exact H0. simpl in H. 
+Abort.
+
+Theorem add_le_helper2 : forall a b c d, S (a + b) <= S (c + d) -> a + b <= c + d.
+Proof.
+  intros. apply Sn_le_Sm__n_le_m in H. exact H.
+Qed.
+
 Theorem add_le_cases : forall n m p q,
     n + m <= p + q -> n <= p \/ m <= q.
 Proof.
-(* 请在此处解答 *) Admitted.
+    intros.
+    generalize dependent p.
+    induction n. left. apply O_le_n.
+    intros. destruct p.
+    * right. rewrite plus_O_n in H. apply le_S_ab2.
+      apply add_le_cases_helper with (n:=n). exact H.
+    * destruct (IHn p). 
+      - rewrite plus_Sn_m in H. rewrite plus_Sn_m in H.
+        apply Sn_le_Sm__n_le_m. exact H.
+      - left. apply n_le_m__Sn_le_Sm. exact H0.
+      - right. exact H0.
+Qed.
 
 Theorem lt_S : forall n m,
   n < m ->
   n < S m.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  unfold lt.
+  intros.
+  apply le_S.
+  exact H.
+Qed.
+
 
 Theorem plus_lt : forall n1 n2 m,
   n1 + n2 < m ->
   n1 < m /\ n2 < m.
 Proof.
-  (* 请在此处解答 *) Admitted.
+  intros.
+  split.
+  - induction n2.
+    + rewrite <- plus_n_O in H. exact H.
+    + apply IHn2. rewrite <- plus_n_Sm in H. 
 
 Theorem leb_complete : forall n m,
   n <=? m = true -> n <= m.
